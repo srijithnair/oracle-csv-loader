@@ -74,7 +74,46 @@ oracle-csv-loader/
 - Python 3.8+
 - Oracle Database 12c or newer (tested on 19c)
 - Privileges: `CREATE TABLE`, `INSERT`, `SELECT` on the target schema
-- `tkinter` for the interactive file picker (included with most Python installs on macOS)
+- `tkinter` for the interactive file picker (included with most Python installs on macOS and Windows)
+
+### Windows
+
+```powershell
+git clone https://github.com/srijithnair/oracle-csv-loader.git
+cd oracle-csv-loader
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python main.py
+```
+
+Use paths like `C:\Users\you\data` when prompted. Install Python from [python.org](https://www.python.org/downloads/) (not the Microsoft Store build) to ensure `tkinter` is included. If the file picker is unavailable, use `csv_to_oracle_loader.py` instead.
+
+**No Grok or xAI account is required** — this is a standalone Python CLI.
+
+## Testing status
+
+This project has **not** been verified end-to-end against a live Oracle database. The following has been tested locally:
+
+| Area | Status |
+|------|--------|
+| Python syntax / imports | Pass |
+| Connection string parsing | Pass |
+| CSV schema inference + DDL generation | Pass |
+| CSV read → row conversion | Pass |
+| `tkinter` availability (macOS) | Pass |
+| `oracledb` driver loads | Pass |
+
+The following has **not** yet been tested:
+
+- Connecting to a real Oracle 19c instance
+- Running `CREATE TABLE` and confirming the schema
+- Inserting rows and verifying them in the database
+- The full interactive flow (`main.py` prompts + file picker)
+- Windows
+- Edge cases: passwords with `@`, very large CSVs, column name mismatches, existing-table mapping
+
+To validate against your environment you will need an Oracle 19c database, a test CSV file, and credentials with `CREATE TABLE` and `INSERT` privileges.
 
 ## License
 
