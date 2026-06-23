@@ -1,71 +1,72 @@
 # Oracle CSV Loader
 
-A robust Python CLI tool to load one or more CSV files into **Oracle Database** tables. Each table is automatically created (or reused) with the **same name as the source CSV file**.
+Python tools to load one or more CSV files into **Oracle Database 19c** tables with automatic schema inference and batched inserts.
 
-## Features
+## Tools
 
-- ✅ Interactive or CLI-driven multi-file selection (supports ranges like `1-5` and `all`)
-- ✅ Automatic table creation with smart data type inference
-  - `NUMBER` for integers/floats
-  - `TIMESTAMP` for dates
-  - `VARCHAR2` / `CLOB` for text
-- ✅ Handles existing tables intelligently:
-  - Append
-  - Replace (TRUNCATE + INSERT)
-  - Recreate (DROP + CREATE)
-  - Skip
-- ✅ Batched inserts (default 10,000 rows) for performance and low memory usage
-- ✅ Works with Oracle 19c, 21c, 23ai (thin mode — no Oracle Instant Client required)
-- ✅ Proper NULL handling and column name sanitization
+### Interactive loader (`main.py`) — recommended
 
-## Installation
+A guided workflow that walks you through:
+
+1. Choosing a directory path
+2. Selecting multiple CSV files (native file picker)
+3. Entering an Oracle connection string
+4. Creating a new table (with schema preview + confirmation) or inserting into an existing table
+5. Loading all selected CSVs into the target table
 
 ```bash
-pip install oracledb pandas
+python main.py
 ```
 
-## Quick Start (Interactive)
+**Connection string format:**
+
+```
+username/password@host:port/service_name
+```
+
+Example: `scott/tiger@localhost:1521/ORCLPDB1`
+
+### CLI loader (`csv_to_oracle_loader.py`)
+
+Batch-oriented script that creates one table per CSV file (table name = CSV filename). Supports append, replace, recreate, and skip modes.
 
 ```bash
 python csv_to_oracle_loader.py --dir /path/to/your/csvs
 ```
 
-You will be prompted to:
-1. Select which CSV files to load
-2. Enter Oracle credentials and connection string
-3. Choose action if tables already exist
+See `csv_to_oracle_loader.py --help` for flags like `--if-exists`, `--batch-size`, and `--create-only`.
 
-## Command Line Examples
+## Features
 
-```bash
-# Non-interactive append
-python csv_to_oracle_loader.py \
-  --dir ./data \
-  --user MYDBUSER \
-  --dsn "dbhost.example.com:1521/ORCLPDB1" \
-  --if-exists append
+- Multi-file CSV selection
+- Automatic Oracle type inference (`NUMBER`, `TIMESTAMP`, `VARCHAR2`, `CLOB`)
+- Schema confirmation before `CREATE TABLE`
+- Column mapping when inserting into existing tables
+- Batched inserts for performance
+- NULL handling and column name sanitization
 
-# Replace (truncate) mode
-python csv_to_oracle_loader.py --dir ./exports --if-exists replace --batch-size 20000
-
-# Only create empty tables (no data load)
-python csv_to_oracle_loader.py --dir ./data --create-only
-```
-
-## Connection String
-
-Use Oracle Easy Connect syntax:
-
-```
-hostname:port/service_name
-```
-
-Example: `dbserver.company.com:1521/ORCLPDB1`
-
-You can also set the password via environment variable:
+## Installation
 
 ```bash
-export ORACLE_PASSWORD=your_secret_password
+git clone https://github.com/srijithnair/oracle-csv-loader.git
+cd oracle-csv-loader
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Project layout
+
+```
+oracle-csv-loader/
+├── main.py                  # Interactive loader entry point
+├── csv_to_oracle_loader.py  # CLI loader (one table per CSV)
+├── requirements.txt
+└── src/
+    ├── prompts.py           # Interactive prompts and file picker
+    ├── connection.py        # Oracle connection and DML
+    ├── schema.py            # CSV type inference and DDL
+    └── loader.py            # Interactive workflow orchestration
 ```
 
 ## Requirements
@@ -73,6 +74,7 @@ export ORACLE_PASSWORD=your_secret_password
 - Python 3.8+
 - Oracle Database 12c or newer (tested on 19c)
 - Privileges: `CREATE TABLE`, `INSERT`, `SELECT` on the target schema
+- `tkinter` for the interactive file picker (included with most Python installs on macOS)
 
 ## License
 
